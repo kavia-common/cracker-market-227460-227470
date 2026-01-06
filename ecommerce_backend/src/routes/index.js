@@ -1,12 +1,18 @@
 const express = require('express');
 const healthController = require('../controllers/health');
+const authRoutes = require('./auth');
 
 const router = express.Router();
+
+// Authentication routes
+router.use('/auth', authRoutes);
+
 // Health endpoint
 
 /**
  * @swagger
- * /:\n *   get:
+ * /:
+ *   get:
  *     summary: Health endpoint with database status
  *     description: Returns the health status of the service including database connection state
  *     tags:

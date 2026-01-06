@@ -18,8 +18,23 @@ const options = {
       {
         name: 'Health',
         description: 'Service health and status endpoints'
+      },
+      {
+        name: 'Authentication',
+        description: 'User authentication and authorization endpoints (JWT-based)'
       }
-    ]
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter JWT token obtained from /auth/login or /auth/register'
+        }
+      }
+    },
+    security: []
   },
   apis: ['./src/routes/*.js'], // Path to the API docs
 };
