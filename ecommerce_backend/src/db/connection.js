@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
 
-// MongoDB connection configuration
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://appuser:dbuser123@localhost:5001/myapp?authSource=admin';
+// MongoDB connection configuration from environment variables
+const MONGODB_URL = process.env.MONGODB_URL;
+const MONGODB_DB = process.env.MONGODB_DB || 'myapp';
+
+// Construct full MongoDB URI
+const MONGODB_URI = MONGODB_URL 
+  ? `${MONGODB_URL.replace(/\/$/, '')}/${MONGODB_DB}${MONGODB_URL.includes('?') ? '&' : '?'}authSource=admin`
+  : `mongodb://appuser:dbuser123@localhost:5001/${MONGODB_DB}?authSource=admin`;
 
 let isConnected = false;
 
@@ -65,11 +71,23 @@ async function closeDB() {
 
 /**
  * Get current connection status
- * @returns {boolean} Connection status
+ * @returns {Object} Connection status details
  */
 // PUBLIC_INTERFACE
 function getConnectionStatus() {
-  return isConnected && mongoose.connection.readyState === 1;
+  const readyState = mongoose.connection.readyState;
+  const states = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  return {
+    isConnected: isConnected && readyState === 1,
+    state: states[readyState] || 'unknown',
+    readyState: readyState
+  };
 }
 
 module.exports = {

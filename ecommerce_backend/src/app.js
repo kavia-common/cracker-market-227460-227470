@@ -7,12 +7,31 @@ const swaggerSpec = require('../swagger');
 // Initialize express app
 const app = express();
 
-app.use(cors({
-  origin: '*',
+// CORS configuration - allow frontend on port 3000
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3000', 'https://vscode-internal-42646-beta.beta01.cloud.kavia.ai:3000'];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  maxAge: parseInt(process.env.CORS_MAX_AGE || '3600')
+};
+
+app.use(cors(corsOptions));
 app.set('trust proxy', true);
+
 app.use('/docs', swaggerUi.serve, (req, res, next) => {
   const host = req.get('host');           // may or may not include port
   let protocol = req.protocol;          // http or https
